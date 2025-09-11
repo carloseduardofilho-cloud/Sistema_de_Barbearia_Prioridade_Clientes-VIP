@@ -59,6 +59,7 @@ const osThreadAttr_t CriaClienteTask_attributes = {
   .priority = (osPriority_t) osPriorityHigh,
 };
 
+```
 ---
 
 ## 🔗 Mecanismo de Sincronização
