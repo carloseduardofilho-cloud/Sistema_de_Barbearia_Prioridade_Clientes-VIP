@@ -59,6 +59,8 @@ const osThreadAttr_t CriaClienteTask_attributes = {
   .priority = (osPriority_t) osPriorityHigh,
 };
 
+---
+
 ## 🔗 Mecanismo de Sincronização
 
 O sistema usa semáforos e filas para coordenar o fluxo:
@@ -77,6 +79,8 @@ sem_clientes_vipHandle = osSemaphoreNew(1, 1, &sem_clientes_vip_attributes);
 /* Semáforo para clientes normais */
 sem_clientes_normaisHandle = osSemaphoreNew(3, 3, &sem_clientes_normais_attributes);
 
+---
+
 ## 👨‍🔧 Funcionamento das Tarefas
 
 ### ✂️ Barbeiro
@@ -84,14 +88,20 @@ sem_clientes_normaisHandle = osSemaphoreNew(3, 3, &sem_clientes_normais_attribut
 - Verifica primeiro se há **VIPs**; se não, atende **normais**.  
 - Acende **LED correspondente** durante o corte.  
 
+---
+
 ### 🙂 Cliente Normal
 - Criado apenas se houver vaga nas **3 cadeiras**.  
 - Caso contrário, "vai embora" (**LED piscando**).  
+
+---
 
 ### 👑 Cliente VIP
 - Só acessa a **cadeira VIP**.  
 - Sempre tem **prioridade no atendimento**.  
 - Se a cadeira VIP estiver ocupada, **vai embora**.  
+
+---
 
 ### 🔔 Geração de Clientes (Botões)
 - Pressionar um botão gera **interrupção** que cria um cliente.  
@@ -141,5 +151,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
         osThreadNew(ClientTask, (void*)VIP, &Vip_attributes);
     }
 }
+
+---
 
 ## 🎥 Link do vídeo: 
