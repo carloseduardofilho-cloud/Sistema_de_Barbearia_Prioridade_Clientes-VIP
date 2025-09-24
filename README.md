@@ -1,57 +1,198 @@
-# 💈 Sistema de Barbearia com Prioridade em Tempo Real (FreeRTOS + STM32)
 
-Projeto da disciplina **Sistemas em Tempo Real**  
+# Tutorial: Sistema de Barbearia com Prioridade para Clientes VIP
 
-> **Integrantes**  
-> Carlos Eduardo Alves Mamde Filho – 121110309  
-> Ygor de Almeida Pereira – 121110166  
+**Universidade Federal de Campina Grande**  
+Centro de Engenharia Elétrica e Informática  
+Departamento de Engenharia Elétrica  
+Disciplina: Sistemas em Tempo Real  
+Professor: Kyller Costa Gorgonio
 
----
+**Alunos:**  
+- Carlos Eduardo Alves Mamede Filho — Matrícula: 121110309  
+- Ygor de Almeida Pereira — Matrícula: 121110166
 
-## 🔎 Descrição
-
-Este projeto implementa uma variação do **Problema do Barbeiro Dorminhoco**, utilizando **FreeRTOS** em um microcontrolador **STM32F446RE**.  
-O diferencial é a introdução de **clientes VIP**, que possuem prioridade absoluta sobre clientes normais, tornando o sistema uma aplicação de **tempo real hard**.
-
-Além da lógica de escalonamento, o sistema foi **integrado ao hardware da PhotoBoard**:
-- **LEDs**: representam o status das cadeiras e do barbeiro (ocupado, livre, dormindo).  
-- **Botões**: geram interrupções simulando a chegada de clientes normais e VIPs.  
+Campina Grande - PB, Setembro de 2025
 
 ---
 
-## 🎯 Motivação
-
-A barbearia é usada como metáfora para problemas reais de **concorrência e tempo real**:
-- **VIP ↔ tarefas críticas** (hard real-time).  
-- **Clientes normais ↔ tarefas comuns** (soft real-time).  
-- **Cadeiras ↔ buffers limitados**.  
-- **Barbeiro ↔ recurso exclusivo**.  
-
-Assim, o projeto demonstra como **escalonamento, semáforos e sincronização** podem ser aplicados em sistemas embarcados.
+**Fonte:** Tutorial_Trabalho_STR.pdf. fileciteturn0file0
 
 ---
 
-## ⚙️ Estrutura do Sistema
+## Sumário
+1. [Especificações do Sistema](#especificações-do-sistema)  
+   1.1 [Entendendo o Projeto](#entendendo-o-projeto)  
+   1.2 [Componentes da Barbearia](#componentes-da-barbearia)  
+   1.3 [Comportamento dos Clientes](#comportamento-dos-clientes)  
+2. [Fluxo Geral](#fluxo-geral)  
+3. [Guia de Implementação: STM32 + FreeRTOS](#guia-de-implementação-stm32--freertos)  
+   3.1 [Estrutura do código](#estrutura-do-código)  
+   3.1.1 [Inclusão de bibliotecas](#inclusão-de-bibliotecas)  
+   3.1.2 [Estrutura de informações do cliente](#estrutura-de-informações-do-cliente)  
+   3.1.3 [Definições de temporizador e variáveis privadas](#definições-de-temporizador-e-variáveis-privadas)  
+   3.1.4 [Definição de tasks e semáforos do FreeRTOS](#definição-de-tasks-e-semáforos-do-freertos)  
+   3.1.5 [Variáveis auxiliares e definição de cadeiras](#variáveis-auxiliares-e-definição-de-cadeiras)  
+   3.1.6 [Protótipos de funções](#protótipos-de-funções)  
+   3.1.7 [Inicialização do sistema e periféricos](#inicialização-do-sistema-e-periféricos)  
+   3.1.8 [Criação e inicialização de semáforos](#criação-e-inicialização-de-semáforos)  
+   3.1.9 [Criação de tasks do FreeRTOS](#criação-de-tasks-do-freertos)  
+   3.1.10 [Inicialização do scheduler do FreeRTOS](#inicialização-do-scheduler-do-freertos)  
+   3.1.11 [Configuração do clock do sistema](#configuração-do-clock-do-sistema)  
+   3.1.12 [Configuração do Timer 13](#configuração-do-timer-13)  
+   3.1.13 [Configuração da UART2](#configuração-da-uart2)  
+   3.1.14 [Configuração das GPIOs](#configuração-das-gpios)  
+   3.1.15 [Função CriaCliente](#função-criacliente)  
+   3.1.16 [Função AcendeLed](#função-acendeled)  
+   3.1.17 [Callback de interrupção dos botões](#callback-de-interrupção-dos-botões)  
+   3.1.18 [Funções auxiliares de temporização e comunicação](#funções-auxiliares-de-temporização-e-comunicação)  
+   3.1.19 [Task padrão StartDefaultTask](#task-padrão-startdefaulttask)  
+   3.1.20 [Task de atendimento de cliente (StartCliente)](#task-de-atendimento-de-cliente-startcliente)  
+   3.1.21 [Task de criação de clientes (StartCriaClienteTask)](#task-de-criação-de-clientes-startcriaclientetask)  
+   3.1.22 [Task do barbeiro (StartBarbeiroTask)](#task-do-barbeiro-startbarbeirotask)  
+   3.1.23 [Task de clientes VIP (StartVip)](#task-de-clientes-vip-startvip)  
+   3.1.24 [Callbacks e tratamento de erros](#callbacks-e-tratamento-de-erros)  
+4. [Componentes para Montagem do Protótipo](#componentes-para-montagem-do-protótipo)
 
-O sistema modela:
+---
 
-- **1 barbeiro**: atende apenas 1 cliente por vez.  
-- **3 cadeiras de espera para clientes normais**.  
-- **1 cadeira exclusiva para clientes VIP**.  
-- **Geração de clientes**: feita via **interrupções externas** (botões).  
+## 1. Especificações do Sistema
 
-As tarefas são criadas no FreeRTOS:
+### 1.1 Entendendo o Projeto
+Este projeto é uma variação do clássico problema do *Sleeping Barber*, proposto por Edsger Dijkstra. O objetivo é implementar, em **FreeRTOS**, um sistema de gerenciamento de barbearia com suporte a concorrência, sincronização de processos e prioridades em tempo real.
 
+Nesta versão são introduzidos **clientes VIP**, que possuem prioridade absoluta sobre clientes normais, preemptando a fila de espera. A implementação deve empregar mecanismos de sincronização (semaforos, mutexes, etc.), garantindo resposta imediata aos clientes, evitando deadlocks, minimizando starvation para clientes normais e assegurando restrições temporais (por exemplo, tempos máximos de espera menores para VIPs).
+
+### 1.2 Componentes da Barbearia
+- **1 barbeiro**: atende um cliente por vez e dorme quando não há clientes pendentes.  
+- **1 cadeira de corte**: recurso compartilhado (exclusão mútua).  
+- **3 cadeiras de espera**: para clientes normais. Se todas estiverem ocupadas, clientes normais vão embora.  
+- **1 cadeira para clientes VIP**: exclusiva para VIPs. Se ocupada, VIPs vão embora.
+
+### 1.3 Comportamento dos Clientes
+- **Clientes normais**: chegam aleatoriamente, sentam nas cadeiras de espera se disponíveis. Esperam em fila (FIFO) para serem atendidos. Se a sala de espera estiver cheia, vão embora.  
+- **Clientes VIP**: chegam aleatoriamente, sentam-se na cadeira VIP se disponível. Quando o barbeiro termina um atendimento, atende o VIP imediatamente (preemptando a fila de normais), mesmo que haja clientes normais esperando. Se a cadeira VIP estiver ocupada, vão embora.
+
+---
+
+## 2. Fluxo Geral
+- O barbeiro dorme se não houver clientes (normais ou VIP).  
+
+**Cliente normal:**
+- Verifica cadeiras de espera livres.  
+- Senta e acorda o barbeiro se ele estiver dormindo, ou espera na fila.  
+
+**Cliente VIP:**
+- Verifica cadeira VIP livre.  
+- Senta e acorda o barbeiro se ele estiver dormindo.  
+- É atendido na próxima oportunidade, furando a fila dos normais.  
+
+**Após cada atendimento:**
+- O barbeiro verifica primeiro se há VIP esperando; se não houver, atende o próximo normal da fila.
+
+**Simulação de tempos e prioridades:**
+- Chegada de clientes: aleatória.  
+- Tempo de corte: fixo ou variável (ex.: 5–10 unidades de tempo).  
+- Em tempo real: garantir resposta a VIPs em ≤ 1 unidade de tempo após barbeiro disponível.  
+- **VIPs:** prioridade *hard real-time*.  
+- **Normais:** prioridade *soft real-time* (evitar starvation).
+
+**Métricas sugeridas:**
+- Tempo médio de espera (normais e VIPs).  
+- Taxa de clientes perdidos (que vão embora).  
+- Throughput do barbeiro.
+
+**Condições de erro a serem evitadas:**
+- Race conditions.  
+- Deadlocks.  
+- Starvation (incluir mecanismos para atendimento eventual de normais).
+
+---
+
+## 3. Guia de Implementação: STM32 + FreeRTOS
+
+### Estrutura do código
+A implementação é baseada em STM32 HAL + FreeRTOS (via CMSIS-RTOS). Abaixo estão os principais tópicos e trechos de código presentes no relatório original.
+
+### 3.1.1 Criação e Configuração do Projeto na STM32CubeIDE
+
+O primeiro passo IDE é criar um novo projeto para um stm32, nesse caso no campo _board selector_ escolhemos nossa placa que é a NUCLEO-F446RE a linguagem alvo é C e inicializamos os periféricos no modo _default_, esse modo traz alguns periféricos ja configurados como a USART por exemplo, em seguida a IDE ira abrir uma janela de configuração do dispositivo, onde é possível visualizar os periféricos e os pinos do microprocessador.
+
+<img width="587" height="660" alt="image" src="https://github.com/user-attachments/assets/1b61d302-9c9a-42f9-b2a9-1e282a254cb4" />
+
+<img width="1860" height="840" alt="image" src="https://github.com/user-attachments/assets/d90e7b78-c149-40b1-ba9a-efc074b63dbb" />
+
+### Configuração do FREERTOS
+Na janela lateral _Middleware and Software Packs_ habilitamos o FREERTOS com a interface CMSIS_V2. Ainda na janela do FreeRTOS configuramos as tasks e os semafóros utilizados. Para criar uma Taks, siga para a aba _Tasks and Queues_, você deve notar que ja existe uma task default, que é inicializada com o próprio FREERTOS. Para criar uma nova clique em Add, e uma nova janela como a da figura a seguir ira surgir. Aqui você pode escolher o nome da task, sua prioridade, tamanho da pilha, função de ativação, e o tipo de alocação de memória.
+
+<img width="323" height="272" alt="image" src="https://github.com/user-attachments/assets/9c4bb0eb-1460-4368-a21f-9682c0c7045d" />
+
+As seguintes tasks para esse projeto foram criadas conforme a imagem a seguir. Suas respectivas funções serão explicadas na sequência
+
+<img width="955" height="180" alt="image" src="https://github.com/user-attachments/assets/19e7e2c3-ca83-485b-ac66-7567b0a906a9" />
+
+
+O processo para configuração dos semáforos é similar, na aba _Timers and Semaphores_ criamos os seguintes semafóros. Note que existem dois tipos de semafóros os binarios e os de contagem, os de binário so tem um token de acesso, enquanto os de contagem podem ter mais de 1.
+
+<img width="957" height="313" alt="image" src="https://github.com/user-attachments/assets/cec346c2-8abf-4ac8-bdc7-218248c9e813" />
+
+
+
+#### Configuração dos GPIO e interrupções 
+
+Como foi visto o projeto engloba a utilização de leds e botões para interação física com o usuário e visualização do funcionamento do código. Para configurar portas GPIO (_General Purpose Input/Output)_ usamos a visualização do processador e os pinos ao seu redor, clicamos no pino desejado e habilitamos sua função que pode ser GPIO_Output, GPIO_Input, GPIO_EXTI5, entre outras possibilidades, ainda é possível escolher _labels_, que em código servirão como "apelidos" para essas portas facilitando sua nomenclatura e identificação. Aqui configuramos os seguintes pinos GPIO:
+
+<img width="1210" height="242" alt="image" src="https://github.com/user-attachments/assets/0e984e4c-cb3a-46c4-96c8-2e7063a3ffcc" />
+
+
+<img width="808" height="559" alt="image" src="https://github.com/user-attachments/assets/207e14cc-2830-4c9d-b515-4a5f7b8b84c5" />
+
+
+Observe que a placa tem um botão próprio e um led PC13 PA5 respectivamente, ja pré configurados por default, o nosso botão externo está no PC13 e recebe o modo _EXIT (External Interrupt Mode)_ e uma configuração de Pull-up, assim a placa acrescenta um resistor interno de Pull-Up ao pino que ficara o botão, é **importante que se tenha um resistor de Pull-Up ou Pull-Down, interno ou externo para limitar a corrente e definir o estado de leitura do botão.**
+### 3.1.1 Inclusão de bibliotecas
 ```c
-/* Task do Barbeiro */
-osThreadId_t BarbeiroTaskHandle;
-const osThreadAttr_t BarbeiroTask_attributes = {
-  .name = "BarbeiroTask",
+#include "main.h"
+#include "cmsis_os.h"
+#include "stdlib.h"
+#include "stdio.h"
+```
+
+### 3.1.2 Estrutura de informações do cliente
+```c
+typedef struct {
+  uint32_t id;
+  uint32_t duracao;
+} ClientInfo;
+```
+
+### 3.1.3 Definições de temporizador e variáveis privadas
+```c
+#define TIMER_TICK_S (0.00078f) // 780 us
+#define TIMER_MAX_CNT (65535)
+
+TIM_HandleTypeDef htim13;
+UART_HandleTypeDef huart2;
+```
+
+### 3.1.4 Definição de tasks e semáforos do FreeRTOS
+Exemplo de handles, atributos de threads e semáforos:
+```c
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityAboveNormal,
+  .priority = (osPriority_t) osPriorityNormal,
 };
 
-/* Task de Geração de Clientes */
+/* Definitions for Cliente */
+osThreadId_t ClienteHandle;
+const osThreadAttr_t Cliente_attributes = {
+  .name = "Cliente",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
+
+/* Definitions for CriaClienteTask */
 osThreadId_t CriaClienteTaskHandle;
 const osThreadAttr_t CriaClienteTask_attributes = {
   .name = "CriaClienteTask",
@@ -59,97 +200,478 @@ const osThreadAttr_t CriaClienteTask_attributes = {
   .priority = (osPriority_t) osPriorityHigh,
 };
 
+/* Definitions for BarbeiroTask */
+osThreadId_t BarbeiroTaskHandle;
+const osThreadAttr_t BarbeiroTask_attributes = {
+  .name = "BarbeiroTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityAboveNormal,
+};
+
+/* Definitions for Vip */
+osThreadId_t VipHandle;
+const osThreadAttr_t Vip_attributes = {
+  .name = "Vip",
+  .stack_size = 512 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
+
+/* Definitions for semaphores */
+osSemaphoreId_t InterruptSemHandle;
+const osSemaphoreAttr_t InterruptSem_attributes = {.name = "InterruptSem"};
+osSemaphoreId_t BarbeiroSemHandle;
+const osSemaphoreAttr_t BarbeiroSem_attributes = {.name = "BarbeiroSem"};
+osSemaphoreId_t CorteSemHandle;
+const osSemaphoreAttr_t CorteSem_attributes = {.name = "CorteSem"};
+osSemaphoreId_t sem_clientes_vipHandle;
+const osSemaphoreAttr_t sem_clientes_vip_attributes = {.name = "sem_clientes_vip"};
+osSemaphoreId_t CorteVipSemHandle;
+const osSemaphoreAttr_t CorteVipSem_attributes = {.name = "CorteVipSem"};
+osSemaphoreId_t sem_clientes_normaisHandle;
+const osSemaphoreAttr_t sem_clientes_normais_attributes = {.name = "sem_clientes_normais"};
 ```
----
 
-## 🔗 Mecanismo de Sincronização
-
-O sistema usa semáforos e filas para coordenar o fluxo:
-
-- **sem_clientes_vip** → gerencia a cadeira VIP (máx. 1).  
-- **sem_clientes_normais** → controla até 3 cadeiras normais.  
-- **BarbeiroSem** → acorda o barbeiro quando um cliente chega.  
-- **CorteSem e CorteVipSem** → sinalizam fim do atendimento.  
-
-Exemplo simplificado:
-
+### 3.1.5 Variáveis auxiliares e definição de cadeiras
 ```c
-/* Semáforo para clientes VIP */
+uint8_t tipo;
+char buffer[64];
+#define CADEIRAS_NORMAIS_LIVRES 3
+```
+
+### 3.1.6 Protótipos de funções
+```c
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+static void MX_USART2_UART_Init(void);
+static void MX_TIM13_Init(void);
+void StartDefaultTask(void *argument);
+void StartCliente(void *argument);
+void StartCriaClienteTask(void *argument);
+void StartBarbeiroTask(void *argument);
+void StartVip(void *argument);
+
+void Task_action(char message);
+void CriaCliente(uint32_t id_recebido, uint32_t duracao_recebido);
+void AcendeLed(void);
+```
+
+### 3.1.7 Inicialização do sistema e periféricos
+Sequência típica de inicialização:
+```c
+HAL_Init();
+SystemClock_Config();
+MX_GPIO_Init();
+MX_USART2_UART_Init();
+MX_TIM13_Init();
+HAL_TIM_Base_Start(&htim13);
+osKernelInitialize();
+```
+
+### 3.1.8 Criação e inicialização de semáforos
+```c
+/* creation of InterruptSem */
+InterruptSemHandle = osSemaphoreNew(1, 0, &InterruptSem_attributes);
+
+/* creation of BarbeiroSem */
+BarbeiroSemHandle = osSemaphoreNew(1, 0, &BarbeiroSem_attributes);
+
+/* creation of CorteSem */
+CorteSemHandle = osSemaphoreNew(1, 0, &CorteSem_attributes);
+
+/* creation of sem_clientes_vip */
 sem_clientes_vipHandle = osSemaphoreNew(1, 1, &sem_clientes_vip_attributes);
 
-/* Semáforo para clientes normais */
-sem_clientes_normaisHandle = osSemaphoreNew(3, 3, &sem_clientes_normais_attributes);
+/* creation of CorteVipSem */
+CorteVipSemHandle = osSemaphoreNew(1, 0, &CorteVipSem_attributes);
 
+/* creation of sem_clientes_normais */
+sem_clientes_normaisHandle = osSemaphoreNew(3, 3, &sem_clientes_normais_attributes);
 ```
 
----
+### 3.1.9 Criação de tasks do FreeRTOS
+```c
+/* creation of CriaClienteTask */
+CriaClienteTaskHandle = osThreadNew(StartCriaClienteTask, NULL, &CriaClienteTask_attributes);
 
-## 👨‍🔧 Funcionamento das Tarefas
+/* creation of BarbeiroTask */
+BarbeiroTaskHandle = osThreadNew(StartBarbeiroTask, NULL, &BarbeiroTask_attributes);
+```
 
-### ✂️ Barbeiro
-- Bloqueado em **BarbeiroSem** até cliente chegar.  
-- Verifica primeiro se há **VIPs**; se não, atende **normais**.  
-- Acende **LED correspondente** durante o corte.  
+### 3.1.10 Inicialização do scheduler do FreeRTOS
+```c
+osKernelStart();
+```
 
-### 🙂 Cliente Normal
-- Criado apenas se houver vaga nas **3 cadeiras**.  
-- Caso contrário, "vai embora" (**LED piscando**).
-  
-### 👑 Cliente VIP
-- Só acessa a **cadeira VIP**.  
-- Sempre tem **prioridade no atendimento**.  
-- Se a cadeira VIP estiver ocupada, **vai embora**.  
+### 3.1.11 Configuração do clock do sistema
+Trecho principal:
+```c
+void SystemClock_Config(void)
+{
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-### 🔔 Geração de Clientes (Botões)
-- Pressionar um botão gera **interrupção** que cria um cliente.  
-- **LEDs indicam** a ocupação das cadeiras e fila.  
+  __HAL_RCC_PWR_CLK_ENABLE();
+  __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
 
----
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 16;
+  RCC_OscInitStruct.PLL.PLLN = 336;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
+  RCC_OscInitStruct.PLL.PLLQ = 2;
+  RCC_OscInitStruct.PLL.PLLR = 2;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
-## 🛑 Desafios e Soluções
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                                |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-- **Prioridade Absoluta (VIP)**  
-  VIPs sempre furam a fila de normais.  
-  Resolvido com separação de semáforos e checagem explícita.  
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+}
+```
 
-- **Starvation de Normais**  
-  Muitos VIPs poderiam atrasar indefinidamente normais.  
-  Solução alternativa: alternância após certo número de VIPs.  
+### 3.1.12 Configuração do Timer 13
+```c
+htim13.Instance = TIM13;
+htim13.Init.Prescaler = 65535;
+htim13.Init.CounterMode = TIM_COUNTERMODE_UP;
+htim13.Init.Period = 65535;
+htim13.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+htim13.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+if (HAL_TIM_Base_Init(&htim13) != HAL_OK)
+{
+  Error_Handler();
+}
+```
 
-- **Deadlocks**  
-  Situações de semáforo não liberado corrigidas com verificações extras.  
+### 3.1.13 Configuração da UART2
+```c
+huart2.Instance = USART2;
+huart2.Init.BaudRate = 115200;
+huart2.Init.WordLength = UART_WORDLENGTH_8B;
+huart2.Init.StopBits = UART_STOPBITS_1;
+huart2.Init.Parity = UART_PARITY_NONE;
+huart2.Init.Mode = UART_MODE_TX_RX;
+huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+huart2.Init.OverSampling = UART_OVERSAMPLING_16;
+if (HAL_UART_Init(&huart2) != HAL_OK)
+{
+  Error_Handler();
+}
+```
 
----
+### 3.1.14 Configuração das GPIOs
+Trecho essencial de inicialização GPIO:
+```c
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
 
-## 📊 Métricas Avaliadas
-- Tempo médio de espera (**VIP vs. Normal**).  
-- Clientes perdidos (**sem vaga → vão embora**).  
-- Throughput do barbeiro (**cortes realizados / tempo**).  
+  /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
 
----
+  /* Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, LD2_Pin|GPIO_PIN_9|GPIO_PIN_10, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8|GPIO_PIN_9, GPIO_PIN_RESET);
 
-## 💡 Integração com Hardware
+  /* Configure GPIO pin : B1_Pin */
+  GPIO_InitStruct.Pin = B1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(B1_GPIO_Port, &GPIO_InitStruct);
 
-**LEDs indicam:**
-- Barbeiro dormindo/ocupado.  
-- Cadeiras VIP/normal disponíveis ou ocupadas.  
+  /* Configure GPIO pins : LD2_Pin PA9 PA10 */
+  GPIO_InitStruct.Pin = LD2_Pin|GPIO_PIN_9|GPIO_PIN_10;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-**Botões simulam chegada de clientes:**
-- Um botão cria **cliente normal**.  
-- Outro botão cria **cliente VIP**.  
+  /* Configure GPIO pin : PC7 */
+  GPIO_InitStruct.Pin = GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-Exemplo no código (`main.c`):
+  /* Configure GPIO pin : B5_Pin */
+  GPIO_InitStruct.Pin = B5_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(B5_GPIO_Port, &GPIO_InitStruct);
 
+  /* Configure GPIO pins : PB8 PB9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /* EXTI interrupt init */
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+}
+```
+
+### 3.1.15 Função CriaCliente
+```c
+void CriaCliente(uint32_t id_recebido, uint32_t duracao_recebido) {
+  // aloca espaço para os dados do cliente
+  ClientInfo *novoCliente = malloc(sizeof(ClientInfo));
+
+  novoCliente->id = id_recebido;
+  novoCliente->duracao = duracao_recebido;
+
+  // Se cliente normal
+  if(tipo == 0) {
+    if(osSemaphoreAcquire(sem_clientes_normaisHandle, 0) == osOK) {
+      osThreadNew(StartCliente, novoCliente, &Cliente_attributes);
+    } else {
+      free(novoCliente);
+    }
+  }
+  // Se cliente VIP
+  else {
+    if(osSemaphoreAcquire(sem_clientes_vipHandle, 0) == osOK) {
+      osThreadNew(StartVip, novoCliente, &Vip_attributes);
+    } else {
+      free(novoCliente);
+    }
+  }
+}
+```
+
+### 3.1.16 Função AcendeLed
+```c
+void AcendeLed(void) {
+  uint8_t count = osSemaphoreGetCount(sem_clientes_normaisHandle);
+  uint8_t count_vip = osSemaphoreGetCount(sem_clientes_vipHandle);
+
+  if (count == 3) {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, 0);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, 0);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 0);
+  }
+  else if (count == 2) {
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, 0);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, 0);
+  }
+  else if (count == 1) {
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, 1);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, 0);
+  }
+  else if (count == 0) {
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, 1);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, 1);
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, 1);
+  }
+
+  if (count_vip == 0) {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 1);
+  } else {
+    HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, 0);
+  }
+}
+```
+
+### 3.1.17 Callback de interrupção dos botões
 ```c
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
-    if(GPIO_Pin == BOTAO_NORMAL_Pin) {
-        osThreadNew(ClientTask, (void*)NORMAL, &Cliente_attributes);
-    } else if(GPIO_Pin == BOTAO_VIP_Pin) {
-        osThreadNew(ClientTask, (void*)VIP, &Vip_attributes);
-    }
+  if (GPIO_Pin == B1_Pin) {
+    osSemaphoreRelease(InterruptSemHandle);
+    tipo = 0;
+  }
+  if (GPIO_Pin == B5_Pin) {
+    osSemaphoreRelease(InterruptSemHandle);
+    tipo = 1;
+  }
+}
+```
+
+### 3.1.18 Funções auxiliares de temporização e comunicação
+```c
+float Timer_GetElapsedTime(TIM_HandleTypeDef *htim, uint32_t start) {
+  uint32_t end = __HAL_TIM_GET_COUNTER(htim);
+  uint32_t elapsed_ticks;
+
+  if (end >= start) {
+    elapsed_ticks = end - start;
+  } else {
+    elapsed_ticks = (TIMER_MAX_CNT - start) + end + 1;
+  }
+
+  return elapsed_ticks * TIMER_TICK_S; // retorna em segundos
 }
 
+void UART_SendString(UART_HandleTypeDef *huart, const char *msg) {
+  HAL_UART_Transmit(huart, (uint8_t *)msg, strlen(msg), HAL_MAX_DELAY);
+}
 ```
+
+### 3.1.19 Task padrão StartDefaultTask
+```c
+void StartDefaultTask(void *argument) {
+  /* Infinite loop */
+  for (;;) {
+    osDelay(1);
+  }
+}
+```
+
+### 3.1.20 Task de atendimento de cliente (StartCliente)
+```c
+void StartCliente(void *argument) {
+  ClientInfo *info = (ClientInfo *) argument; // Carrega os dados do cliente
+  uint32_t numero = info->id;
+
+  uint32_t start = __HAL_TIM_GET_COUNTER(&htim13);
+  osSemaphoreRelease(BarbeiroSemHandle); // Acorda o barbeiro
+  osSemaphoreAcquire(CorteSemHandle, osWaitForever); // Espera pelo corte acabar
+
+  float elapsed_s = Timer_GetElapsedTime(&htim13, start);
+  snprintf(buffer, sizeof(buffer), "Tempo decorrido: %.2f s\r\n", elapsed_s);
+  UART_SendString(&huart2, buffer);
+
+  free(info); // Libera memória
+  osThreadExit(); // Encerra a task
+}
+```
+
+### 3.1.21 Task de criação de clientes (StartCriaClienteTask)
+```c
+void StartCriaClienteTask(void *argument) {
+  uint32_t id = 0;
+  uint32_t duracao = 3000;
+
+  for (;;) {
+    osSemaphoreAcquire(InterruptSemHandle, osWaitForever);
+    CriaCliente(id, duracao);
+
+    AcendeLed();
+    id++;
+  }
+}
+```
+
+### 3.1.22 Task do barbeiro (StartBarbeiroTask)
+```c
+void StartBarbeiroTask(void *argument) {
+  uint16_t count, count_vip;
+
+  for (;;) {
+    osSemaphoreAcquire(BarbeiroSemHandle, osWaitForever); // Barbeiro espera acordar
+    HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 1);
+
+    count_vip = osSemaphoreGetCount(sem_clientes_vipHandle);
+    count = osSemaphoreGetCount(sem_clientes_normaisHandle);
+
+    if (count_vip == 0) {
+      osSemaphoreRelease(sem_clientes_vipHandle); // Libera um VIP da fila
+      AcendeLed();
+      osDelay(5000); // Realizando o corte
+      osSemaphoreRelease(CorteVipSemHandle); // Corte VIP finalizado
+    } else {
+      osSemaphoreRelease(sem_clientes_normaisHandle); // Libera um cliente normal
+      AcendeLed();
+      osDelay(5000); // Realizando o corte
+      osSemaphoreRelease(CorteSemHandle); // Corte normal finalizado
+    }
+
+    count_vip = osSemaphoreGetCount(sem_clientes_vipHandle);
+    count = osSemaphoreGetCount(sem_clientes_normaisHandle);
+
+    if (count != 3 || count_vip != 1) {
+      osSemaphoreRelease(BarbeiroSemHandle); // Continua atendendo se houver clientes
+    } else {
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_10, 0); // Barbeiro dorme
+    }
+  }
+}
+```
+
+### 3.1.23 Task de clientes VIP (StartVip)
+```c
+void StartVip(void *argument) {
+  ClientInfo *info = (ClientInfo *) argument; // Carrega os dados do cliente
+
+  uint32_t start = __HAL_TIM_GET_COUNTER(&htim13);
+  osSemaphoreRelease(BarbeiroSemHandle); // Acorda o barbeiro
+  osSemaphoreAcquire(CorteVipSemHandle, osWaitForever); // Espera pelo corte VIP
+
+  // Corte finalizado
+  float elapsed_s = Timer_GetElapsedTime(&htim13, start);
+  snprintf(buffer, sizeof(buffer), "Tempo decorrido VIP: %.2f s\r\n", elapsed_s);
+  UART_SendString(&huart2, buffer);
+
+  free(info); // Libera a memória do cliente
+  osThreadExit(); // Encerra a task
+}
+```
+
+### 3.1.24 Callbacks e tratamento de erros
+```c
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
+  if (htim->Instance == TIM6) {
+    HAL_IncTick();
+  }
+}
+
+void Error_Handler(void) {
+  __disable_irq();
+  while (1) { }
+}
+
+#ifdef USE_FULL_ASSERT
+void assert_failed(uint8_t *file, uint32_t line) {
+  // Pode-se implementar envio de mensagem UART ou debug
+}
+#endif /* USE_FULL_ASSERT */
+```
+
 ---
 
-## 🎥 Link do vídeo: 
+## 4. Componentes para Montagem do Protótipo
+
+| Componente       | Quantidade |
+|------------------|------------|
+| Protoboard       | 1          |
+| LED              | 5          |
+| Resistor 330Ω    | 5          |
+| Botão            | 1          |
+| Fios de conexão  | Diversos   |
+
+> Figura 1: Protótipo do sistema de barbearia montado em protoboard com STM32. (ver PDF original)
+
+---
+
+## Observações finais
+- Projeto desenvolvido como prática da disciplina **Sistemas em Tempo Real**.  
+- Baseado no problema clássico do *Sleeping Barber* com adaptação para **prioridade VIP**.  
+- Código e configurações (clocks, timers, GPIOs, UART, semáforos e tasks) exemplificados conforme o relatório original.
+
+---
+
+Se quiser, eu:
+- salvo este `README.md` pronto para você fazer upload no repositório (já salvo neste workspace),  
+- ou faço ajustes (reduzir/incluir trechos de código, adicionar imagens, badges do GitHub, exemplos de uso, etc).
+
