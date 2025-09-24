@@ -122,6 +122,11 @@ O primeiro passo IDE é criar um novo projeto para um stm32, nesse caso no campo
 <img width="1860" height="840" alt="image" src="https://github.com/user-attachments/assets/d90e7b78-c149-40b1-ba9a-efc074b63dbb" />
 
 ### Configuração do FREERTOS
+A primeira coisa a ser feita é na caixa lateral entrar no campo System Core -> SYS e configurar o Timebase Source trocando o SysTick que será usado pelo FREERTOS, para algum timer (TIMx). 
+
+<img width="1226" height="426" alt="image" src="https://github.com/user-attachments/assets/7efd0213-d80a-4619-9e90-23955654e2cb" />
+
+
 Na janela lateral _Middleware and Software Packs_ habilitamos o FREERTOS com a interface CMSIS_V2. Ainda na janela do FreeRTOS configuramos as tasks e os semafóros utilizados. Para criar uma Taks, siga para a aba _Tasks and Queues_, você deve notar que ja existe uma task default, que é inicializada com o próprio FREERTOS. Para criar uma nova clique em Add, e uma nova janela como a da figura a seguir ira surgir. Aqui você pode escolher o nome da task, sua prioridade, tamanho da pilha, função de ativação, e o tipo de alocação de memória.
 
 <img width="323" height="272" alt="image" src="https://github.com/user-attachments/assets/9c4bb0eb-1460-4368-a21f-9682c0c7045d" />
@@ -135,6 +140,9 @@ O processo para configuração dos semáforos é similar, na aba _Timers and Sem
 
 <img width="957" height="313" alt="image" src="https://github.com/user-attachments/assets/cec346c2-8abf-4ac8-bdc7-218248c9e813" />
 
+Por fim na janela Advanced settings habilite a configuração USE_NEWLIB_REENTRANT
+
+<img width="881" height="327" alt="image" src="https://github.com/user-attachments/assets/6190452c-6207-4ab7-8f09-33bc0f640e54" />
 
 
 #### Configuração dos GPIO e interrupções 
@@ -147,7 +155,46 @@ Como foi visto o projeto engloba a utilização de leds e botões para interaç�
 <img width="808" height="559" alt="image" src="https://github.com/user-attachments/assets/207e14cc-2830-4c9d-b515-4a5f7b8b84c5" />
 
 
-Observe que a placa tem um botão próprio e um led PC13 PA5 respectivamente, ja pré configurados por default, o nosso botão externo está no PC13 e recebe o modo _EXIT (External Interrupt Mode)_ e uma configuração de Pull-up, assim a placa acrescenta um resistor interno de Pull-Up ao pino que ficara o botão, é **importante que se tenha um resistor de Pull-Up ou Pull-Down, interno ou externo para limitar a corrente e definir o estado de leitura do botão.**
+Observe que a placa tem um botão próprio e um led PC13 PA5 respectivamente, ja pré configurados por default, o nosso botão externo está no PC13 e recebe o modo _EXIT (External Interrupt Mode)_ e uma configuração de Pull-up, assim a placa acrescenta um resistor interno de Pull-Up ao pino que ficara o botão, é **importante que se tenha um resistor de Pull-Up ou Pull-Down, interno ou externo para limitar a corrente e definir o estado de leitura do botão.** 
+Para habilitar as interrupções, siga para System Core->NVIC e habilite os campos EXTI line[i:j] referente a numeração dos pinos GPIOs escolhidos, nesse caso os dois botões funcionarão como interrupções portanto habilitamos da seguinte forma:
+
+<img width="1469" height="755" alt="image" src="https://github.com/user-attachments/assets/8f835d7e-e485-4822-8aa8-e3942c0a2287" />
+
+#### Configuração do Timer 
+
+Uma das funcionalidades implementadas no código é a de contar quanto tempo o cliente levou desde a chegada até o fim do seu atendimento, para isso habilitamos um periférico temporizador. Mas antes precisamos entender como o Timer do STM32 funciona, segundo a configuração de clock default da nossa placa, os timers estão atuando a 84 MHz
+
+<img width="2496" height="968" alt="image" src="https://github.com/user-attachments/assets/966cc9be-18c1-483a-86e1-4d8dcae35dcb" />
+
+A frequência real do tick de um timer depende de do registrador de Prescaler (PSC) e o valor máximo de contagem do Counter Period (AutoReload Register) (ARR), aqui utilizamos PSC = ARR = 65535, oque equivale a ticks na frequência de 1281 Hz e um tempo máximo de contagem de 51 segundos.
+
+$$
+f_{\text{timer}} = \dfrac{f_{\mathrm{clk\_timer}}}{(PSC+1)}
+$$
+
+$$
+T_{\text{max}} = \dfrac{(ARR+1)}{f_{\mathrm{timer}}}
+$$
+
+Então na janela de timers selecionamos o TIM 13 e o ativamos, também configurando seus registradores da seguinte forma:
+
+<img width="1610" height="981" alt="image" src="https://github.com/user-attachments/assets/0eddeae4-2679-49c5-98ba-0e3998df89d7" />
+
+#### Configuração da USART 
+
+Para enviar as informações do tempo que cada cliente demorou para ser atendido usaremos uma comunicação serial via USART, nesse caso a USART2 é configurada por default da seguinte maneira, é importante atentar aos parâmetros básicos como Baud Rate, quando for estabelecida uma comunicação serial com outro dispositivo ou programa.
+
+<img width="1608" height="1170" alt="image" src="https://github.com/user-attachments/assets/533a7ebe-34ae-4e61-ba5c-18389aa6a605" />
+
+#### Geração do código
+Ao fim de todo este setup inicial, a interface pode gerar o código correspondente as configurações feitas ao clicar no botão de geração de arquivo.
+
+<img width="680" height="71" alt="image" src="https://github.com/user-attachments/assets/ff336ed9-4cd1-4663-a4d7-5f47c35c0fca" />
+
+O seu projeto da IDE corresponde a uma pasta com diversas subpastas e arquivos, sua main.c está localizada em Core -> Src -> main.c, outras pastas carregam os includes e configurações nativas, o arquivo .ioc corresponde a interface gráfica que estavamos interagindo.
+
+<img width="369" height="612" alt="image" src="https://github.com/user-attachments/assets/55a907fc-8335-4025-8dcc-3c2403ffc8b4" />
+
 ### 3.1.1 Inclusão de bibliotecas
 ```c
 #include "main.h"
