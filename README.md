@@ -179,7 +179,7 @@ Para este projeto, foram configurados os seguintes pinos GPIO:
 </p>
 
 
-Observe que a placa tem um botão próprio e um led PC13 PA5 respectivamente, ambos pré configurados por default, o nosso botão externo está no PC13 e recebe o modo** _EXIT (External Interrupt Mode)_** e uma configuração de **Pull-up**, assim a placa acrescenta um resistor interno de Pull-Up ao pino que ficara o botão, é **fundamental que se tenha um resistor de Pull-Up ou Pull-Down, interno ou externo para limitar a corrente e definir o estado de leitura do botão.** 
+Observe que a placa tem um botão próprio e um led PC13 PA5 respectivamente, ambos pré configurados por default, o nosso botão externo está no PC13 e recebe o modo **_EXIT (External Interrupt Mode)_** com uma configuração de **Pull-up**, assim a placa acrescenta um resistor interno de Pull-Up ao pino em que que ficara o botão. É **fundamental que se tenha um resistor de Pull-Up ou Pull-Down, interno ou externo para limitar a corrente e definir o estado de leitura do botão.** 
 Para habilitar as interrupções, siga para **System Core->NVIC** e habilite os campos **EXTI line[i:j]** referente a numeração dos pinos GPIOs escolhidos, nesse caso os dois botões funcionarão como interrupções portanto habilitamos da seguinte forma:
 
 <p align="center">
@@ -221,7 +221,7 @@ Para transmitir as informações referentes ao tempo de atendimento de cada clie
 É importante, entretanto, verificar e ajustar corretamente os parâmetros básicos da comunicação, em especial o **Baud Rate**, para garantir compatibilidade e sincronização com o dispositivo ou programa que irá receber os dados. Aqui nesse tutorial vamos utilizar o **Hercules 3-2-8** para estabelecer a comunicação serial com o microcontrolador.
 
 <p align="center">
-<img width="824" height="500" alt="image" src="https://github.com/user-attachments/assets/533a7ebe-34ae-4e61-ba5c-18389aa6a605" />
+<img width="824" height="550" alt="image" src="https://github.com/user-attachments/assets/533a7ebe-34ae-4e61-ba5c-18389aa6a605" />
 </p>
 
 ### 3.1.6 Geração do código
@@ -405,15 +405,15 @@ Sequência de inicialização do microcontrolador e periféricos antes do FreeRT
 
 1. **HAL_Init()**: inicializa a HAL e o SysTick.
 
-2.** SystemClock_Config()**: configura relógio do sistema.
+2. **SystemClock_Config()**: configura relógio do sistema.
 
 3. **Inicializa periféricos configurados**:
 
-• MX_GPIO_Init(): configura pinos de entrada/saída.
+   • MX_GPIO_Init(): configura pinos de entrada/saída.
 
-• MX_USART2_UART_Init(): inicializa UART para comunicação serial.
+   • MX_USART2_UART_Init(): inicializa UART para comunicação serial.
 
-• MX_TIM13_Init(): inicializa Timer 13.
+   • MX_TIM13_Init(): inicializa Timer 13.
 
 4. **HAL_TIM_Base_Start()**: inicia o timer base para eventos temporizados.
 
