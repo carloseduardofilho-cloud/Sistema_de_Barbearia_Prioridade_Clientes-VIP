@@ -35,19 +35,8 @@ Professor: Kyller Costa Gorgonio
    3.1.11 [Configuração do clock do sistema](#configuração-do-clock-do-sistema)  
    3.1.12 [Configuração do Timer 13](#configuração-do-timer-13)  
    3.1.13 [Configuração da UART2](#configuração-da-uart2)  
-   3.1.14 [Configuração das GPIOs](#configuração-das-gpios)  
-   3.1.15 [Função CriaCliente](#função-criacliente)  
-   3.1.16 [Função AcendeLed](#função-acendeled)  
-   3.1.17 [Callback de interrupção dos botões](#callback-de-interrupção-dos-botões)  
-   3.1.18 [Funções auxiliares de temporização e comunicação](#funções-auxiliares-de-temporização-e-comunicação)  
-   3.1.19 [Task padrão StartDefaultTask](#task-padrão-startdefaulttask)  
-   3.1.20 [Task de atendimento de cliente (StartCliente)](#task-de-atendimento-de-cliente-startcliente)  
-   3.1.21 [Task de criação de clientes (StartCriaClienteTask)](#task-de-criação-de-clientes-startcriaclientetask)  
-   3.1.22 [Task do barbeiro (StartBarbeiroTask)](#task-do-barbeiro-startbarbeirotask)  
-   3.1.23 [Task de clientes VIP (StartVip)](#task-de-clientes-vip-startvip)  
-   3.1.24 [Callbacks e tratamento de erros](#callbacks-e-tratamento-de-erros)  
+   3.1.14 [Configuração das GPI]()
 
-4. [Componentes para Montagem do Protótipo](#componentes-para-montagem-do-protótipo)
 
 
 ---
