@@ -12,29 +12,14 @@ Professor: Kyller Costa Gorgonio
 - Ygor de Almeida Pereira — Matrícula: 121110166
 
 ## Sumário
-1. [Especificações do Sistema](#1-especificações-do-sistema)  
-   1.1 [Entendendo o Projeto](#11-entendendo-o-projeto)  
-   1.2 [Componentes da Barbearia](#12-componentes-da-barbearia)  
-   1.3 [Comportamento dos Clientes](#13-comportamento-dos-clientes)  
-2. [Fluxo Geral](#2-fluxo-geral)  
-3. [Guia de Implementação: STM32 + FreeRTOS](#3-guia-de-implementação-stm32--freertos)  
-   3.1 [Estrutura do código](#31-estrutura-do-código)  
-   3.1.1 [Inclusão de bibliotecas](#311-inclusão-de-bibliotecas)  
-   3.1.2 [Estrutura de informações do cliente](#312-estrutura-de-informações-do-cliente)  
-   3.1.3 [Definições de temporizador e variáveis privadas](#313-definições-de-temporizador-e-variáveis-privadas)  
-   3.1.4 [Definição de tasks e semáforos do FreeRTOS](#314-definição-de-tasks-e-semáforos-do-freertos)  
-   3.1.5 [Variáveis auxiliares e definição de cadeiras](#315-variáveis-auxiliares-e-definição-de-cadeiras)  
-   3.1.6 [Protótipos de funções](#316-protótipos-de-funções)  
-   3.1.7 [Inicialização do sistema e periféricos](#317-inicialização-do-sistema-e-periféricos)  
-   ...
-4. [Componentes para Montagem do Protótipo](#4-componentes-para-montagem-do-protótipo)
 
-## Sumário
 1. [Especificações do Sistema](#especificações-do-sistema)  
    1.1 [Entendendo o Projeto](#entendendo-o-projeto)  
    1.2 [Componentes da Barbearia](#componentes-da-barbearia)  
    1.3 [Comportamento dos Clientes](#comportamento-dos-clientes)  
+
 2. [Fluxo Geral](#fluxo-geral)  
+
 3. [Guia de Implementação: STM32 + FreeRTOS](#guia-de-implementação-stm32--freertos)  
    3.1 [Estrutura do código](#estrutura-do-código)  
    3.1.1 [Inclusão de bibliotecas](#inclusão-de-bibliotecas)  
@@ -61,7 +46,9 @@ Professor: Kyller Costa Gorgonio
    3.1.22 [Task do barbeiro (StartBarbeiroTask)](#task-do-barbeiro-startbarbeirotask)  
    3.1.23 [Task de clientes VIP (StartVip)](#task-de-clientes-vip-startvip)  
    3.1.24 [Callbacks e tratamento de erros](#callbacks-e-tratamento-de-erros)  
+
 4. [Componentes para Montagem do Protótipo](#componentes-para-montagem-do-protótipo)
+
 
 ---
 
