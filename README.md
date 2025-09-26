@@ -110,14 +110,11 @@ Nesta versão são introduzidos **clientes VIP**, que possuem prioridade absolut
 
 ## 3. Guia de Implementação: STM32 + FreeRTOS
 
-### Estrutura do código
-A implementação é baseada em STM32 HAL + FreeRTOS (via CMSIS-RTOS). Abaixo estão os principais tópicos e trechos de código presentes no relatório original.
-
 ### 3.1.1 Criação do Projeto na STM32CubeIDE
 
 O STM32CubeIDE é uma plataforma avançada de desenvolvimento C/C++ com configuração de periféricos, geração de código, compilação de código e recursos de depuração para microcontroladores e microprocessadores STM32.
 
-O primeiro passo na  STM32CubeIDE é **criar um novo projeto**, nesse caso no campo **board selector** escolhemos nossa placa que é a **NUCLEO-F446RE** a linguagem alvo é C, em seguida inicializamos os periféricos no **modo _default**, esse modo traz alguns periféricos já configurados como a USART por exemplo. Por fim a IDE ira abrir uma janela de configuração do dispositivo, onde é possível visualizar os periféricos e os pinos do microprocessador.
+O primeiro passo na  STM32CubeIDE é **criar um novo projeto**, nesse caso no campo **board selector** escolhemos nossa placa que é a **NUCLEO-F446RE** a linguagem alvo é C, em seguida inicializamos os periféricos no **modo default**, esse modo traz alguns periféricos já configurados como a USART por exemplo. Por fim a IDE ira abrir uma janela de configuração do dispositivo, onde é possível visualizar os periféricos e os pinos do microprocessador.
 
 <p align="center">
 <img width="294" height="330" alt="image" src="https://github.com/user-attachments/assets/1b61d302-9c9a-42f9-b2a9-1e282a254cb4" />
