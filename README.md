@@ -23,7 +23,7 @@ Professor: Kyller Costa Gorgonio
 3. [Guia de Implementação: STM32 + FreeRTOS](#3-guia-de-implementação-stm32--freertos)  
    3.1 [Criação do Projeto na STM32CubeIDE](#31-criação-do-projeto-na-stm32cubeide)  
    3.2 [Configuração do FREERTOS](#32-configuração-do-freertos)  
-   3.3 [Configuração dos GPIO e interrupções](#33-configuração-dos-gpio-e-interrupções) 
+   3.3 [Configuração dos GPIO e interrupções](#33-configuração-dos-gpio-e-interrupções)  
    3.4 [Configuração do Timer](#34-configuração-do-timer)  
    3.5 [Configuração da USART](#35-configuração-da-usart)  
    3.6 [Geração do código](#36-geraçãodo-código)  
@@ -47,7 +47,7 @@ Professor: Kyller Costa Gorgonio
    3.24 [Task do barbeiro (StartBarbeiroTask)](#324-task-do-barbeiro-startbarbeirotask)  
    3.25 [Task de clientes VIP (StartVip)](#325-task-de-clientes-vip-startvip)  
 
-4. [Componentes para Montagem do Protótipo](#4-componentes-para-montagem-do-protótipo)
+5. [Componentes para Montagem do Protótipo](#4-componentes-para-montagem-do-protótipo)
 
 
 
