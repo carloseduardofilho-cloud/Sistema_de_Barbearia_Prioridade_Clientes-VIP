@@ -147,7 +147,7 @@ As seguintes tasks para esse projeto foram criadas conforme a imagem a seguir. S
 </p>
 
 
-O processo para configuração dos semáforos é similar, na aba **Timers and Semaphores** criamos os seguintes semafóros. Note que existem dois tipos de semafóros os binarios e os de contagem, os de binário so tem um token de acesso, enquanto os de contagem podem ter mais de 1.
+O processo para configuração dos semáforos é similar, na aba **Timers and Semaphores** criamos os seguintes semafóros. Note que existem dois tipos de semafóros os binarios e os de contagem, os binários tem apenas um token de acesso, enquanto os de contagem podem ter mais de 1.
 
 <p align="center">
 <img width="638" height="260" alt="image" src="https://github.com/user-attachments/assets/cec346c2-8abf-4ac8-bdc7-218248c9e813" />
