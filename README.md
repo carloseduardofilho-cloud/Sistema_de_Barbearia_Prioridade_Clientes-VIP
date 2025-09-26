@@ -163,7 +163,7 @@ Por fim na janela **Advanced settings** habilite a configuração **USE_NEWLIB_R
 ### 3.1.3  Configuração dos GPIO e interrupções 
 
 O projeto utiliza LEDs e botões para permitir a interação física com o usuário e a visualização do funcionamento do código.
-A configuração das portas **GPIO (General Purpose Input/Output)** é realizada por meio da visualização gráfica do microcontrolador e de seus pinos no CubeIDE. Basta selecionar o pino desejado e atribuir a função correspondente, como **GPIO_Output**, **GPIO_Input** ou **GPIO_EXTI5**, entre outras.
+A configuração das portas **GPIO (General Purpose Input/Output)** é realizada por meio da visualização gráfica do microcontrolador e de seus pinos. Basta selecionar o pino desejado e atribuir a função correspondente, como **GPIO_Output**, **GPIO_Input** ou **GPIO_EXTI5**, entre outras.
 
 Além disso, é possível definir **labels** (rótulos), que funcionam como “apelidos” para os pinos. Esses nomes facilitam a identificação e tornam o código mais legível.
 
