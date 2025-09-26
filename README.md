@@ -11,7 +11,23 @@ Professor: Kyller Costa Gorgonio
 - Carlos Eduardo Alves Mamede Filho — Matrícula: 121110309  
 - Ygor de Almeida Pereira — Matrícula: 121110166
 
-Campina Grande - PB, Setembro de 2025
+## Sumário
+1. [Especificações do Sistema](#1-especificações-do-sistema)  
+   1.1 [Entendendo o Projeto](#11-entendendo-o-projeto)  
+   1.2 [Componentes da Barbearia](#12-componentes-da-barbearia)  
+   1.3 [Comportamento dos Clientes](#13-comportamento-dos-clientes)  
+2. [Fluxo Geral](#2-fluxo-geral)  
+3. [Guia de Implementação: STM32 + FreeRTOS](#3-guia-de-implementação-stm32--freertos)  
+   3.1 [Estrutura do código](#31-estrutura-do-código)  
+   3.1.1 [Inclusão de bibliotecas](#311-inclusão-de-bibliotecas)  
+   3.1.2 [Estrutura de informações do cliente](#312-estrutura-de-informações-do-cliente)  
+   3.1.3 [Definições de temporizador e variáveis privadas](#313-definições-de-temporizador-e-variáveis-privadas)  
+   3.1.4 [Definição de tasks e semáforos do FreeRTOS](#314-definição-de-tasks-e-semáforos-do-freertos)  
+   3.1.5 [Variáveis auxiliares e definição de cadeiras](#315-variáveis-auxiliares-e-definição-de-cadeiras)  
+   3.1.6 [Protótipos de funções](#316-protótipos-de-funções)  
+   3.1.7 [Inicialização do sistema e periféricos](#317-inicialização-do-sistema-e-periféricos)  
+   ...
+4. [Componentes para Montagem do Protótipo](#4-componentes-para-montagem-do-protótipo)
 
 ## Sumário
 1. [Especificações do Sistema](#especificações-do-sistema)  
@@ -474,20 +490,20 @@ e prioridade de atendimento**, especialmente para clientes VIP e normais.
 
 1. CriaClienteTaskHandle:
 
-• Criada a partir da função StartCriaClienteTask.
+   • Criada a partir da função StartCriaClienteTask.
 
-• Responsável por gerar clientes aleatórios (normais e VIP) durante a simulação.
+   • Responsável por gerar clientes aleatórios (normais e VIP) durante a simulação.
 
-• Prioridade alta, garantindo que a criação de clientes seja processada rapidamente.
+   • Prioridade alta, garantindo que a criação de clientes seja processada rapidamente.
 
 2. BarbeiroTaskHandle:
 
-• Criada a partir da função StartBarbeiroTask.
+   • Criada a partir da função StartBarbeiroTask.
 
-• Representa a lógica do barbeiro, que atende clientes conforme semáforos e prioridades.
+   • Representa a lógica do barbeiro, que atende clientes conforme semáforos e prioridades.
 
-• Prioridade acima do normal, permitindo que o barbeiro responda rapidamente à chegada
-de VIPs e clientes normais.
+   • Prioridade acima do normal, permitindo que o barbeiro responda rapidamente à chegada
+   de VIPs e clientes normais.
 
 ```c
 /* creation of CriaClienteTask */
@@ -512,29 +528,29 @@ ou VIP), respeitando as regras de disponibilidade de cadeiras.
 
 1. **Alocação de memória:**
 
-• Cria um ponteiro ClientInfo *novoCliente e aloca memória usando malloc.
+   • Cria um ponteiro ClientInfo *novoCliente e aloca memória usando malloc.
 
-• Inicializa os campos id e duracao com os valores recebidos como parâmetros.
+   • Inicializa os campos id e duracao com os valores recebidos como parâmetros.
 
 2. **Verificação do tipo de cliente:**
 
-• Se tipo == 0, é cliente normal.
+   • Se tipo == 0, é cliente normal.
 
-• Caso contrário, é cliente VIP.
+   • Caso contrário, é cliente VIP.
 
-3.** Controle de acesso com semáforos:**
+3. **Controle de acesso com semáforos:**
 
-• Para clientes normais: tenta adquirir o semáforo sem_clientes_normaisHandle com timeout 0.
+   • Para clientes normais: tenta adquirir o semáforo sem_clientes_normaisHandle com timeout 0 (isso quer dizer que se a fila estiver cheia não vai haver entrada de novos clientes).
 
-– Se conseguir, cria uma task StartCliente para o cliente.
+      -Se conseguir, cria uma task StartCliente para o cliente.
+   
+      -Se não houver vaga, libera a memória com free(novoCliente).
 
-– Se não houver vaga, libera a memória com free(novoCliente).
+   • Para clientes VIP: verifica sem_clientes_vipHandle com timeout 0.
 
-• Para clientes VIP: verifica sem_clientes_vipHandle com timeout 0.
+      – Se disponível, cria a task StartVip.
 
-– Se disponível, cria a task StartVip.
-
-– Caso contrário, libera a memória.
+      – Caso contrário, libera a memória.
 
 
 ```c
@@ -564,7 +580,7 @@ void CriaCliente(uint32_t id_recebido, uint32_t duracao_recebido) {
 }
 ```
 
-### 3.1.12 Função AcendeLed
+### 3.2.12 Função AcendeLed
 
 Esta função atualiza LEDs para indicar visualmente a ocupação das cadeiras na barbearia:
 
@@ -614,7 +630,7 @@ void AcendeLed(void) {
 }
 ```
 
-### 3.1.13 Callback de interrupção dos botões
+### 3.2.13 Callback de interrupção dos botões
 
 Esta função é chamada automaticamente pelo HAL quando ocorre uma interrupção nos pinos
 configurados como **EXTI (botões)**. Como a execução de uma interrupção deve ser rápida, não chamamos diretamente a task; usamos semáforos e uma variável tipo para sinalizar o tipo de cliente a ser
@@ -640,7 +656,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 }
 ```
 
-### 3.1.14 Funções auxiliares de temporização e comunicação
+### 3.2.14 Funções auxiliares de temporização e comunicação
 O projeto inclui funções auxiliares para calcular tempo decorrido usando o timer e enviar
 mensagens via UART.
 
@@ -674,30 +690,16 @@ void UART_SendString(UART_HandleTypeDef *huart, const char *msg) {
 }
 ```
 
-### 3.1.15 Task padrão StartDefaultTask
+### 3.2.15 Task padrão StartDefaultTask
 
 O STM32CubeMX gera automaticamente uma task padrão chamada defaultTask. Ela serve
 como um loop contínuo que pode ser usado para inicializações ou monitoramento, mas no nosso
 projeto não realiza nenhuma ação específica.
 
-• O loop infinito (for(;;)) mantém a task em execução contínua.
+• O loop infinito (for(;;)) mantém a task em execução contínua. Por isso na main sua inicialização deve ser comentada.
 
-• osDelay(1) faz a task aguardar 1 tick do RTOS, evitando ocupação total da CPU e permitindo
-que outras tasks sejam executadas.
 
-• No contexto do projeto da barbearia, essa task não interfere nas tasks críticas (Cliente, Barbeiro,
-CriaClienteTask e Vip).
-
-```c
-void StartDefaultTask(void *argument) {
-  /* Infinite loop */
-  for (;;) {
-    osDelay(1);
-  }
-}
-```
-
-### 3.1.16 Task de atendimento de cliente (StartCliente)
+### 3.2.16 Task de atendimento de cliente (StartCliente)
 
 Esta task representa o atendimento de um cliente normal pelo barbeiro. Cada cliente cria
 uma instância desta task com seus próprios dados.
@@ -708,9 +710,7 @@ uma instância desta task com seus próprios dados.
 
 • Libera o semáforo BarbeiroSemHandle para "acordar"o barbeiro.
 
-• Aguarda a finalização do corte com osSemaphoreAcquire(CorteSemHandle, osWaitForever),
-
-bloqueando a task até que o barbeiro termine.
+• Aguarda a finalização do corte com osSemaphoreAcquire(CorteSemHandle, osWaitForever), bloqueando a task até que o barbeiro termine.
 
 • Calcula o tempo decorrido usando Timer_GetElapsedTime e envia mensagem via UART mostrando a duração do atendimento.
 
@@ -736,7 +736,7 @@ void StartCliente(void *argument) {
 }
 ```
 
-### 3.1.17 Task de criação de clientes (StartCriaClienteTask)
+### 3.2.17 Task de criação de clientes (StartCriaClienteTask)
 
 Esta task é responsável por criar novos clientes (normais ou VIP) quando ocorre uma interrupção de botão, simulando a chegada de clientes na barbearia.
 
@@ -770,7 +770,7 @@ void StartCriaClienteTask(void *argument) {
 }
 ```
 
-### 3.1.18 Task do barbeiro (StartBarbeiroTask)
+### 3.2.18 Task do barbeiro (StartBarbeiroTask)
 
 Esta task representa o comportamento do barbeiro, incluindo o atendimento de clientes normais e VIPs com prioridade, controlando LEDs e semáforos.
 
@@ -783,7 +783,7 @@ Esta task representa o comportamento do barbeiro, incluindo o atendimento de cli
 • Lê o número de clientes esperando: count_vip para VIPs e count para normais, usando
 **osSemaphoreGetCount**.
 
-• Se houver clientes VIP (count_vip == 0 significa cadeira VIP ocupada):
+• Se houver clientes VIP (count_vip == 0 significa fila VIP ocupada):
 
 – Libera o semáforo do cliente VIP (sem_clientes_vipHandle) para iniciar o atendimento.
 
@@ -844,7 +844,7 @@ void StartBarbeiroTask(void *argument) {
 }
 ```
 
-### 3.1.23 Task de clientes VIP (StartVip)
+### 3.2.23 Task de clientes VIP (StartVip)
 
 Esta task representa o atendimento de um cliente VIP, garantindo prioridade máxima sobre
 os clientes normais e controle de tempo do atendimento.
@@ -854,6 +854,7 @@ dados do cliente, como **id** e **duracao**.
 
 • Captura o tempo inicial do timer (**__HAL_TIM_GET_COUNTER**) para medir o tempo de espera e
 atendimento.
+
 • Libera o semáforo **BarbeiroSemHandle**, acordando o barbeiro caso ele esteja dormindo.
 
 • Aguarda o término do corte VIP com **osSemaphoreAcquire(CorteVipSemHandle, osWaitForever)**,
@@ -896,7 +897,22 @@ void StartVip(void *argument) {
 | Botão            | 1          |
 | Fios de conexão  | Diversos   |
 
-> Figura 1: Protótipo do sistema de barbearia montado em protoboard com STM32. (ver PDF original)
+
+<p align="center">
+<img width="500" height="438" alt="image" src="https://github.com/user-attachments/assets/b7a21d66-f23f-44ed-a98c-ff6883fb4080" />
+<p>
+
+
+A relação entre os pinos externos da NUCLEO-F446RE e os em código que são usados no Formato PAx, PBx..., segue a pinagem da imagem a seguir:
+
+<p align="center">
+<img width="700" height="550" alt="image" src="https://github.com/user-attachments/assets/ba7b4f3b-03f7-4844-8317-9dc04ebd5bf4" />
+<p>
+
+
+
+Link de um vídeo mostrando a execução do projeto: Link de um vídeo mostrando a execução do projeto: https://www.youtube.com/watch?v=KBSHyNkSmbc
+
 
 ---
 
@@ -906,8 +922,3 @@ void StartVip(void *argument) {
 - Código e configurações (clocks, timers, GPIOs, UART, semáforos e tasks) exemplificados conforme o relatório original.
 
 ---
-
-Se quiser, eu:
-- salvo este `README.md` pronto para você fazer upload no repositório (já salvo neste workspace),  
-- ou faço ajustes (reduzir/incluir trechos de código, adicionar imagens, badges do GitHub, exemplos de uso, etc).
-
