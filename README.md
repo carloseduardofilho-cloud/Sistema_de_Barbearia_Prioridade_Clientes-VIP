@@ -21,7 +21,7 @@ Professor: Kyller Costa Gorgonio
 2. [Fluxo Geral](#2-fluxo-geral)  
 
 3. [Guia de Implementação: STM32 + FreeRTOS](#3-guia-de-implementação-stm32--freertos)  
-   3.1 [Estrutura do código](#31-criação-do-projeto-na-stm32CubeIDE)  
+   3.1 [Criação do projeto na STM32CubeIDE](#31-criação-do-projeto-na-stm32CubeIDE)  
    3.1.1 [Inclusão de bibliotecas](#311-inclusão-de-bibliotecas)  
    3.1.2 [Estrutura de informações do cliente](#312-estrutura-de-informações-do-cliente)  
    3.1.3 [Definições de temporizador e variáveis privadas](#313-definições-de-temporizador-e-variáveis-privadas)  
