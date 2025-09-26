@@ -11,7 +11,7 @@ Professor: Kyller Costa Gorgonio
 - Carlos Eduardo Alves Mamede Filho — Matrícula: 121110309
 - Email de Contato: carlos.eduardo.filho@ee.ufcg.edu.br
 - Ygor de Almeida Pereira — Matrícula: 121110166
-- Email de Contato: ygorpereira10@gmail.com
+- Email de Contato: ygor.pereira@ee.ufcg.edu.br
 
 ## Sumário
 
