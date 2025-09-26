@@ -13,12 +13,6 @@ Professor: Kyller Costa Gorgonio
 
 Campina Grande - PB, Setembro de 2025
 
----
-
-**Fonte:** Tutorial_Trabalho_STR.pdf. fileciteturn0file0
-
----
-
 ## Sumário
 1. [Especificações do Sistema](#especificações-do-sistema)  
    1.1 [Entendendo o Projeto](#entendendo-o-projeto)  
