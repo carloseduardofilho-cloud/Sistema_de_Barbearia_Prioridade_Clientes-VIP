@@ -26,7 +26,7 @@ Professor: Kyller Costa Gorgonio
    3.3 [Configuração dos GPIO e interrupções](#33-configuração-dos-gpio-e-interrupções)  
    3.4 [Configuração do Timer](#34-configuração-do-timer)  
    3.5 [Configuração da USART](#35-configuração-da-usart)  
-   3.6 [Geração do código](#36-geraçãodo-código)  
+   3.6 [Geração do código](#36-geração-do-código)  
    3.7 [Inclusão de bibliotecas](#37-inclusão-de-bibliotecas)  
    3.8 [Estrutura de informações do cliente](#38-estrutura-de-informações-do-cliente)  
    3.9 [Definições de temporizador e variáveis privadas](#39-definições-de-temporizador-e-variáveis-privadas)  
@@ -158,7 +158,7 @@ Por fim na janela **Advanced settings** habilite a configuração **USE_NEWLIB_R
 </p>
 
 
-### 3.3  Configuração dos GPIO e interrupções 
+### 3.3 Configuração dos GPIO e interrupções 
 
 O projeto utiliza LEDs e botões para permitir a interação física com o usuário e a visualização do funcionamento do código.
 A configuração das portas **GPIO (General Purpose Input/Output)** é realizada por meio da visualização gráfica do microcontrolador e de seus pinos. Basta selecionar o pino desejado e atribuir a função correspondente, como **GPIO_Output**, **GPIO_Input** ou **GPIO_EXTI5**, entre outras.
