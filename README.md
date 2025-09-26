@@ -21,31 +21,31 @@ Professor: Kyller Costa Gorgonio
 2. [Fluxo Geral](#2-fluxo-geral)  
 
 3. [Guia de Implementação: STM32 + FreeRTOS](#3-guia-de-implementação-stm32--freertos)  
-   3.1 [Criação do projeto na STM32CubeIDE](#31-criação-do-projeto-na-stm32CubeIDE)  
-   3.1.1 [Inclusão de bibliotecas](#311-inclusão-de-bibliotecas)  
-   3.1.2 [Estrutura de informações do cliente](#312-estrutura-de-informações-do-cliente)  
-   3.1.3 [Definições de temporizador e variáveis privadas](#313-definições-de-temporizador-e-variáveis-privadas)  
-   3.1.4 [Definição de tasks e semáforos do FreeRTOS](#314-definição-de-tasks-e-semáforos-do-freertos)  
-   3.1.5 [Variáveis auxiliares e definição de cadeiras](#315-variáveis-auxiliares-e-definição-de-cadeiras)  
-   3.1.6 [Protótipos de funções](#316-protótipos-de-funções)  
-   3.1.7 [Inicialização do sistema e periféricos](#317-inicialização-do-sistema-e-periféricos)  
-   3.1.8 [Criação e inicialização de semáforos](#318-criação-e-inicialização-de-semáforos)  
-   3.1.9 [Criação de tasks do FreeRTOS](#319-criação-de-tasks-do-freertos)  
-   3.1.10 [Inicialização do scheduler do FreeRTOS](#3110-inicialização-do-scheduler-do-freertos)  
-   3.1.11 [Configuração do clock do sistema](#3111-configuração-do-clock-do-sistema)  
-   3.1.12 [Configuração do Timer 13](#3112-configuração-do-timer-13)  
-   3.1.13 [Configuração da UART2](#3113-configuração-da-uart2)  
-   3.1.14 [Configuração das GPIOs](#3114-configuração-das-gpios)  
-   3.1.15 [Função CriaCliente](#3115-função-criacliente)  
-   3.1.16 [Função AcendeLed](#3116-função-acendeled)  
-   3.1.17 [Callback de interrupção dos botões](#3117-callback-de-interrupção-dos-botões)  
-   3.1.18 [Funções auxiliares de temporização e comunicação](#3118-funções-auxiliares-de-temporização-e-comunicação)  
-   3.1.19 [Task padrão StartDefaultTask](#3119-task-padrão-startdefaulttask)  
-   3.1.20 [Task de atendimento de cliente (StartCliente)](#3120-task-de-atendimento-de-cliente-startcliente)  
-   3.1.21 [Task de criação de clientes (StartCriaClienteTask)](#3121-task-de-criação-de-clientes-startcriaclientetask)  
-   3.1.22 [Task do barbeiro (StartBarbeiroTask)](#3122-task-do-barbeiro-startbarbeirotask)  
-   3.1.23 [Task de clientes VIP (StartVip)](#3123-task-de-clientes-vip-startvip)  
-   3.1.24 [Callbacks e tratamento de erros](#3124-callbacks-e-tratamento-de-erros)  
+   3.1 [Criação do Projeto na STM32CubeIDE](#31-criação-do-projeto-na-stm32cubeide)  
+   3.2 [Configuração do FREERTOS](#32-configuração-do-freertos)  
+   3.3 [Configuração dos GPIO e interrupções](#33-configuração-dos-gpio-e-interrupções)  
+   3.4 [Configuração do Timer](#34-configuração-do-timer)  
+   3.5 [Configuração da USART](#35-configuração-da-usart)  
+   3.6 [Geração do código](#36-geraçãodo-código)  
+   3.7 [Inclusão de bibliotecas](#37-inclusão-de-bibliotecas)  
+   3.8 [Estrutura de informações do cliente](#38-estrutura-de-informações-do-cliente)  
+   3.9 [Definições de temporizador e variáveis privadas](#39-definições-de-temporizador-e-variáveis-privadas)  
+   3.10 [Definição de tasks e semáforos do FreeRTOS](#310-definição-de-tasks-e-semáforos-do-freertos)  
+   3.11 [Variáveis auxiliares e definição de cadeiras](#311-variáveis-auxiliares-e-definição-de-cadeiras)  
+   3.12 [Protótipos de funções](#312-protótipos-de-funções)  
+   3.13 [Inicialização do sistema e periféricos](#313-inicialização-do-sistema-e-periféricos)  
+   3.14 [Criação e inicialização de semáforos](#314-criação-e-inicialização-de-semáforos)  
+   3.15 [Criação de tasks do FreeRTOS](#315-criação-de-tasks-do-freertos)  
+   3.16 [Inicialização do scheduler do FreeRTOS](#316-inicialização-do-scheduler-do-freertos)  
+   3.17 [Função CriaCliente](#317-função-criacliente)  
+   3.18 [Função AcendeLed](#318-função-acendeled)  
+   3.19 [Callback de interrupção dos botões](#319-callback-de-interrupção-dos-botões)  
+   3.20 [Funções auxiliares de temporização e comunicação](#320-funções-auxiliares-de-temporização-e-comunicação)  
+   3.21 [Task padrão StartDefaultTask](#321-task-padrão-startdefaulttask)  
+   3.22 [Task de atendimento de cliente (StartCliente)](#322-task-de-atendimento-de-cliente-startcliente)  
+   3.23 [Task de criação de clientes (StartCriaClienteTask)](#323-task-de-criação-de-clientes-startcriaclientetask)  
+   3.24 [Task do barbeiro (StartBarbeiroTask)](#324-task-do-barbeiro-startbarbeirotask)  
+   3.25 [Task de clientes VIP (StartVip)](#325-task-de-clientes-vip-startvip)  
 
 4. [Componentes para Montagem do Protótipo](#4-componentes-para-montagem-do-protótipo)
 
@@ -108,7 +108,7 @@ Nesta versão são introduzidos **clientes VIP**, que possuem prioridade absolut
 
 ## 3. Guia de Implementação: STM32 + FreeRTOS
 
-### 3.1.1 Criação do Projeto na STM32CubeIDE
+### 3.1 Criação do Projeto na STM32CubeIDE
 
 O STM32CubeIDE é uma plataforma avançada de desenvolvimento C/C++ com configuração de periféricos, geração de código, compilação de código e recursos de depuração para microcontroladores e microprocessadores STM32.
 
@@ -122,7 +122,7 @@ O primeiro passo na  STM32CubeIDE é **criar um novo projeto**, nesse caso no ca
 <img width="930" height="420" alt="image" src="https://github.com/user-attachments/assets/d90e7b78-c149-40b1-ba9a-efc074b63dbb" />
 </p>
 
-### 3.1.2 Configuração do FREERTOS
+### 3.2 Configuração do FREERTOS
 O primeiro passo é acessar, na barra lateral, o menu **System Core → SYS** e alterar a opção **Timebase Source**, substituindo o SysTick (que será utilizado pelo FreeRTOS) por um **timer (TIMx)**.
 
 <p align="center">
@@ -158,7 +158,7 @@ Por fim na janela **Advanced settings** habilite a configuração **USE_NEWLIB_R
 </p>
 
 
-### 3.1.3  Configuração dos GPIO e interrupções 
+### 3.3  Configuração dos GPIO e interrupções 
 
 O projeto utiliza LEDs e botões para permitir a interação física com o usuário e a visualização do funcionamento do código.
 A configuração das portas **GPIO (General Purpose Input/Output)** é realizada por meio da visualização gráfica do microcontrolador e de seus pinos. Basta selecionar o pino desejado e atribuir a função correspondente, como **GPIO_Output**, **GPIO_Input** ou **GPIO_EXTI5**, entre outras.
@@ -186,7 +186,7 @@ Para habilitar as interrupções, siga para **System Core->NVIC** e habilite os 
 
 
 
-### 3.1.4 Configuração do Timer 
+### 3.4 Configuração do Timer 
 
 Uma das funcionalidades implementadas no código é a medição do tempo que o cliente leva desde a chegada até o término do atendimento. Para isso, utilizamos um **periférico temporizador (Timer)**.
 
@@ -213,7 +213,7 @@ Então na janela de timers selecionamos o **TIM13** e o ativamos, também config
 <img width="884" height="538" alt="image" src="https://github.com/user-attachments/assets/0eddeae4-2679-49c5-98ba-0e3998df89d7" />
 </p>
 
-### 3.1.5 Configuração da USART 
+### 3.5 Configuração da USART 
 
 Para transmitir as informações referentes ao tempo de atendimento de cada cliente, utilizamos a **comunicação serial via USART**. Neste projeto, a USART2 já vem configurada por default.
 É importante, entretanto, verificar e ajustar corretamente os parâmetros básicos da comunicação, em especial o **Baud Rate**, para garantir compatibilidade e sincronização com o dispositivo ou programa que irá receber os dados. Aqui nesse tutorial vamos utilizar o **Hercules 3-2-8** para estabelecer a comunicação serial com o microcontrolador.
@@ -222,7 +222,7 @@ Para transmitir as informações referentes ao tempo de atendimento de cada clie
 <img width="824" height="550" alt="image" src="https://github.com/user-attachments/assets/533a7ebe-34ae-4e61-ba5c-18389aa6a605" />
 </p>
 
-### 3.1.6 Geração do código
+### 3.6 Geração do código
 Ao fim de todo este setup inicial, a interface pode gerar o código correspondente as configurações feitas ao **clicar no botão de geração de arquivo**.
 
 <p align="center">
@@ -236,7 +236,7 @@ O seu projeto da IDE corresponde a uma pasta com diversas subpastas e arquivos, 
 <img width="184" height="306" alt="image" src="https://github.com/user-attachments/assets/55a907fc-8335-4025-8dcc-3c2403ffc8b4" />
 </p>
 
-### 3.2.1 Inclusão de bibliotecas
+### 3.7 Inclusão de bibliotecas
 
 O projeto inicia com a inclusão de cabeçalhos essenciais. **main.h** contém definições gerais do
 sistema, enquanto **cmsis_os.h** fornece acesso às funções do FreeRTOS via CMSIS-RTOS. Também
@@ -251,7 +251,7 @@ entrada e saída, como printf() para depuração.
 #include "stdio.h"
 ```
 
-### 3.1.2 Estrutura de informações do cliente
+### 3.8 Estrutura de informações do cliente
 
 Define-se a **struct ClientInfo**, que armazena informações essenciais de cada cliente:
 
@@ -266,7 +266,7 @@ typedef struct {
 } ClientInfo;
 ```
 
-### 3.2.3 Definições de temporizador e variáveis privadas
+### 3.9 Definições de temporizador e variáveis privadas
 
 Constantes do temporizador e variáveis para periféricos:
 
@@ -288,7 +288,7 @@ TIM_HandleTypeDef htim13;
 UART_HandleTypeDef huart2;
 ```
 
-### 3.2.4 Definição de tasks e semáforos do FreeRTOS
+### 3.10 Definição de tasks e semáforos do FreeRTOS
 
 Handles e atributos de tasks e semáforos permitem que o FreeRTOS gerencie threads e sincronização:
 
@@ -354,7 +354,7 @@ osSemaphoreId_t sem_clientes_normaisHandle;
 const osSemaphoreAttr_t sem_clientes_normais_attributes = {.name = "sem_clientes_normais"};
 ```
 
-### 3.2.5 Variáveis auxiliares e definição de cadeiras
+### 3.11 Variáveis auxiliares e definição de cadeiras
 
 • **tipo**: indica se o cliente é normal ou VIP.
 
@@ -369,7 +369,7 @@ char buffer[64];
 #define CADEIRAS_NORMAIS_LIVRES 3
 ```
 
-### 3.2.6 Protótipos de funções
+### 3.12 Protótipos de funções
 
 
 Protótipos das funções de inicialização de hardware e das tasks do FreeRTOS, além de funções
@@ -397,7 +397,7 @@ void CriaCliente(uint32_t id_recebido, uint32_t duracao_recebido);
 void AcendeLed(void);
 ```
 
-### 3.2.7 Inicialização do sistema e periféricos
+### 3.13 Inicialização do sistema e periféricos
 
 Sequência de inicialização do microcontrolador e periféricos antes do FreeRTOS:
 
@@ -427,7 +427,7 @@ HAL_TIM_Base_Start(&htim13);
 osKernelInitialize();
 ```
 
-### 3.2.8 Criação e inicialização de semáforos
+### 3.14 Criação e inicialização de semáforos
 
 Neste ponto do código, os semáforos do FreeRTOS são criados utilizando **osSemaphoreNew()**,
 definindo quantos tokens estão disponíveis e quais atributos cada semáforo possui. Os semáforos são
@@ -469,7 +469,7 @@ CorteVipSemHandle = osSemaphoreNew(1, 0, &CorteVipSem_attributes);
 sem_clientes_normaisHandle = osSemaphoreNew(3, 3, &sem_clientes_normais_attributes);
 ```
 
-### 3.2.9 Criação de tasks do FreeRTOS
+### 3.15 Criação de tasks do FreeRTOS
 
 Neste trecho, as tasks principais do sistema são criadas utilizando a função osThreadNew().
 Cada task representa uma thread independente no FreeRTOS, com sua própria pilha, prioridade e
@@ -501,7 +501,7 @@ CriaClienteTaskHandle = osThreadNew(StartCriaClienteTask, NULL, &CriaClienteTask
 BarbeiroTaskHandle = osThreadNew(StartBarbeiroTask, NULL, &BarbeiroTask_attributes);
 ```
 
-### 3.2.10 Inicialização do scheduler do FreeRTOS
+### 3.16 Inicialização do scheduler do FreeRTOS
 Após criar todas as tasks e semáforos, o código chama:
 
 ```c
@@ -509,7 +509,7 @@ osKernelStart();
 ```
 
 
-### 3.2.11 Função CriaCliente
+### 3.17 Função CriaCliente
 
 A função **CriaCliente()** é chamada quando um botão é pressionado, por meio de uma **interrupção externa**. Seu objetivo é criar dinamicamente um cliente e alocá-lo na fila correta (normal
 ou VIP), respeitando as regras de disponibilidade de cadeiras.
@@ -568,7 +568,7 @@ void CriaCliente(uint32_t id_recebido, uint32_t duracao_recebido) {
 }
 ```
 
-### 3.2.12 Função AcendeLed
+### 3.18 Função AcendeLed
 
 Esta função atualiza LEDs para indicar visualmente a ocupação das cadeiras na barbearia:
 
@@ -618,7 +618,7 @@ void AcendeLed(void) {
 }
 ```
 
-### 3.2.13 Callback de interrupção dos botões
+### 3.19 Callback de interrupção dos botões
 
 Esta função é chamada automaticamente pelo HAL quando ocorre uma interrupção nos pinos
 configurados como **EXTI (botões)**. Como a execução de uma interrupção deve ser rápida, não chamamos diretamente a task; usamos semáforos e uma variável tipo para sinalizar o tipo de cliente a ser
@@ -644,7 +644,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 }
 ```
 
-### 3.2.14 Funções auxiliares de temporização e comunicação
+### 3.20 Funções auxiliares de temporização e comunicação
 O projeto inclui funções auxiliares para calcular tempo decorrido usando o timer e enviar
 mensagens via UART.
 
@@ -678,7 +678,7 @@ void UART_SendString(UART_HandleTypeDef *huart, const char *msg) {
 }
 ```
 
-### 3.2.15 Task padrão StartDefaultTask
+### 3.21 Task padrão StartDefaultTask
 
 O STM32CubeMX gera automaticamente uma task padrão chamada defaultTask. Ela serve
 como um loop contínuo que pode ser usado para inicializações ou monitoramento, mas no nosso
@@ -687,7 +687,7 @@ projeto não realiza nenhuma ação específica.
 • O loop infinito (for(;;)) mantém a task em execução contínua. Por isso na main sua inicialização deve ser comentada.
 
 
-### 3.2.16 Task de atendimento de cliente (StartCliente)
+### 3.22 Task de atendimento de cliente (StartCliente)
 
 Esta task representa o atendimento de um cliente normal pelo barbeiro. Cada cliente cria
 uma instância desta task com seus próprios dados.
@@ -724,7 +724,7 @@ void StartCliente(void *argument) {
 }
 ```
 
-### 3.2.17 Task de criação de clientes (StartCriaClienteTask)
+### 3.23 Task de criação de clientes (StartCriaClienteTask)
 
 Esta task é responsável por criar novos clientes (normais ou VIP) quando ocorre uma interrupção de botão, simulando a chegada de clientes na barbearia.
 
@@ -758,7 +758,7 @@ void StartCriaClienteTask(void *argument) {
 }
 ```
 
-### 3.2.18 Task do barbeiro (StartBarbeiroTask)
+### 3.24 Task do barbeiro (StartBarbeiroTask)
 
 Esta task representa o comportamento do barbeiro, incluindo o atendimento de clientes normais e VIPs com prioridade, controlando LEDs e semáforos.
 
@@ -832,7 +832,7 @@ void StartBarbeiroTask(void *argument) {
 }
 ```
 
-### 3.2.23 Task de clientes VIP (StartVip)
+### 3.25 Task de clientes VIP (StartVip)
 
 Esta task representa o atendimento de um cliente VIP, garantindo prioridade máxima sobre
 os clientes normais e controle de tempo do atendimento.
