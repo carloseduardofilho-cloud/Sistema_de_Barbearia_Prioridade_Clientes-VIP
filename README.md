@@ -8,8 +8,10 @@ Disciplina: Sistemas em Tempo Real
 Professor: Kyller Costa Gorgonio
 
 **Alunos:**  
-- Carlos Eduardo Alves Mamede Filho — Matrícula: 121110309  
+- Carlos Eduardo Alves Mamede Filho — Matrícula: 121110309
+- Email de Contato: carlos.eduardo.filho@ee.ufcg.edu.br
 - Ygor de Almeida Pereira — Matrícula: 121110166
+- Email de Contato: ygorpereira10@gmail.com
 
 ## Sumário
 
